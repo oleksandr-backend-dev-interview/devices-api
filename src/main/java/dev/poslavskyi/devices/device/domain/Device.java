@@ -1,5 +1,11 @@
 package dev.poslavskyi.devices.device.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Version;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
@@ -8,11 +14,29 @@ import java.util.UUID;
 public class Device {
     private static final String NAME = "name";
     private static final String BRAND = "brand";
+
+    @Id
     private UUID id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private String brand;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private DeviceState state;
+
+    @Column(name = "creation_time", nullable = false, updatable = false)
     private Instant creationTime;
+
+    @Version
+    private Long version;
+
+    protected Device() {
+
+    }
 
     public Device(String name, String brand, Clock clock) {
         this.id = UUID.randomUUID();
