@@ -1,16 +1,14 @@
 package dev.poslavskyi.devices.device.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+@Entity
+@Table(name = "device")
 public class Device {
     private static final String NAME = "name";
     private static final String BRAND = "brand";

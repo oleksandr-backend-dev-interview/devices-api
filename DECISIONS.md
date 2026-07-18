@@ -1,6 +1,6 @@
 * `UUID` primary key, generated in application - no need for PostgreSQL to obtain a value from a sequence or identity column.
 We will ganarate it using `UUID.randomUUID()` so it will be UUIDv4. UUIDv7 can be the production improvement because it's time-ordered and avoids B-tree fragmentation.
-* `state` as `VARCHAR`. We will enforce valid values in the application layer, but the database table also contains check constraint.
+* `state` as `VARCHAR`. We will enforce valid values in the application layer, but the database table also contains check constraint (this constraint is being checked by Testcontainers test).
 * `creation_time` as `TIMESTAMPTZ` so its value will not be ambiguous compare to `TIMESTAMP`.
 * `LOWER(brand)` index for case-insensitive brand filtering.
 * `version` column for optimistic locking.
