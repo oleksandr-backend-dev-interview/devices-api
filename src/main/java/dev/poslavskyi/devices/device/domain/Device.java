@@ -1,6 +1,12 @@
 package dev.poslavskyi.devices.device.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -64,14 +70,46 @@ public class Device {
         return creationTime;
     }
 
+    public void applyUpdate(
+            String name,
+            String brand,
+            DeviceState state
+    ) {
+        String normalizedName = requireNonBlank(name, NAME).trim();
+        String normalizedBrand = requireNonBlank(brand, BRAND).trim();
+        DeviceState requiredState = Objects.requireNonNull(state, "state must not be null");
+
+        boolean nameChanges = !normalizedName.equals(this.name);
+        boolean brandChanges = !normalizedBrand.equals(this.brand);
+
+        if (nameChanges || brandChanges) {
+            ensureNotInUse(
+                    "Changing the name or brand of a device in use is not allowed"
+            );
+        }
+
+        // Reuse existing domain operations after validating the entire update.
+        rename(normalizedName);
+        changeBrand(normalizedBrand);
+        changeState(requiredState);
+    }
+
     public void rename(String newName) {
+        String normalizedNewName = requireNonBlank(newName, NAME).trim();
+        if (normalizedNewName.equals(this.name)) {
+            return;
+        }
         ensureNotInUse("Renaming the device in use is not allowed");
-        this.name = requireNonBlank(newName, NAME).trim();
+        this.name = normalizedNewName;
     }
 
     public void changeBrand(String newBrand) {
+        String normalizedNewBrand = requireNonBlank(newBrand, BRAND).trim();
+        if (normalizedNewBrand.equals(this.brand)) {
+            return;
+        }
         ensureNotInUse("Changing the brand of the device in use is not allowed");
-        this.brand = requireNonBlank(newBrand, BRAND).trim();
+        this.brand = normalizedNewBrand;
     }
 
     public void ensureCanBeDeleted() {
