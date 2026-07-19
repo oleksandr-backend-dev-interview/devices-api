@@ -8,4 +8,4 @@ CREATE TABLE device (
 );
 
 CREATE INDEX idx_device_brand_lower ON device (LOWER(brand));
-CREATE INDEX idx_state ON device (state);
+CREATE INDEX idx_device_state ON device (state);
