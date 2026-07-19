@@ -28,6 +28,7 @@ public class DeviceService {
         return device;
     }
 
+    @Transactional(readOnly = true)
     public Device get(UUID id) {
         return findOrThrow(id);
     }
