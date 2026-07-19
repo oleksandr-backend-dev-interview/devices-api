@@ -6,7 +6,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
@@ -123,7 +122,7 @@ class DeviceTest {
 
         device.changeBrand("Samsung");
 
-        assertThat(device.getBrand()).isEqualTo("Samsung");
+        assertEquals("Samsung", device.getBrand());
     }
 
     @Test
@@ -165,5 +164,109 @@ class DeviceTest {
         assertThatExceptionOfType(DeviceOperationNotAllowedException.class)
                 .isThrownBy(device::ensureCanBeDeleted)
                 .withMessageContaining("in use");
+    }
+
+    @Test
+    void applyUpdateReplacesAllMutableFields() {
+        Device device = getDevice();
+
+        device.applyUpdate(
+                "Galaxy S25",
+                "Samsung",
+                DeviceState.INACTIVE
+        );
+
+        assertEquals("Galaxy S25", device.getName());
+        assertEquals("Samsung", device.getBrand());
+        assertEquals(DeviceState.INACTIVE, device.getState());
+        assertEquals(FIXED_TIME, device.getCreationTime());
+    }
+
+    @Test
+    void applyUpdateTrimsNameAndBrand() {
+        Device device = getDevice();
+
+        device.applyUpdate(
+                "  Galaxy S25  ",
+                "  Samsung ",
+                DeviceState.INACTIVE
+        );
+
+        assertEquals("Galaxy S25", device.getName());
+        assertEquals("Samsung", device.getBrand());
+    }
+
+    @Test
+    void applyUpdateRejectsNullState() {
+        Device device = getDevice();
+
+        assertThatNullPointerException()
+                .isThrownBy(() -> device.applyUpdate("Galaxy S25", "Samsung", null));
+    }
+
+    @Test
+    void applyUpdateValidatesAllValuesBeforeModifyingDevice() {
+        Device device = getDevice();
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> device.applyUpdate("New name", "   ", DeviceState.INACTIVE));
+
+        assertEquals("iPhone 15", device.getName());
+        assertEquals("Apple", device.getBrand());
+        assertEquals(DeviceState.AVAILABLE, device.getState());
+    }
+
+    @Test
+    void applyUpdateRejectsNameChangeWhenDeviceIsInUse() {
+        Device device = getDevice();
+        device.changeState(DeviceState.IN_USE);
+
+        assertThatExceptionOfType(DeviceOperationNotAllowedException.class)
+                .isThrownBy(() -> device.applyUpdate("iPhone 15 Pro", "Apple", DeviceState.AVAILABLE))
+                .withMessageContaining("in use");
+
+        assertEquals("iPhone 15", device.getName());
+        assertEquals(DeviceState.IN_USE, device.getState());
+    }
+
+    @Test
+    void applyUpdateRejectsBrandChangeWhenDeviceIsInUse() {
+        Device device = getDevice();
+        device.changeState(DeviceState.IN_USE);
+
+        assertThatExceptionOfType(DeviceOperationNotAllowedException.class)
+                .isThrownBy(() -> device.applyUpdate("iPhone 15", "Samsung", DeviceState.AVAILABLE))
+                .withMessageContaining("in use");
+
+        assertEquals("Apple", device.getBrand());
+        assertEquals(DeviceState.IN_USE, device.getState());
+    }
+
+    @Test
+    void applyUpdateAllowsStateChangeForInUseDeviceWhenNameAndBrandAreUnchanged() {
+        Device device = getDevice();
+        device.changeState(DeviceState.IN_USE);
+
+        device.applyUpdate("iPhone 15", "Apple", DeviceState.AVAILABLE);
+
+        assertEquals("iPhone 15", device.getName());
+        assertEquals("Apple", device.getBrand());
+        assertEquals(DeviceState.AVAILABLE, device.getState());
+    }
+
+    @Test
+    void renamingToCurrentNameIsAllowedWhenDeviceIsInUse() {
+        Device device = getDevice();
+        device.changeState(DeviceState.IN_USE);
+
+        assertDoesNotThrow(() -> device.rename("iPhone 15"));
+    }
+
+    @Test
+    void changingToCurrentBrandIsAllowedWhenDeviceIsInUse() {
+        Device device = getDevice();
+        device.changeState(DeviceState.IN_USE);
+
+        assertDoesNotThrow(() -> device.changeBrand("Apple"));
     }
 }
