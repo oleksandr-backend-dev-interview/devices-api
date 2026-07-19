@@ -15,5 +15,17 @@ services:
       timeout: 3s
       retries: 10
 
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/devices
+      DB_USERNAME: devices
+      DB_PASSWORD: devices
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres-data:

@@ -1,0 +1,6 @@
+target/
+.git/
+.idea/
+NOTES.md
+*.md
+!README.md
