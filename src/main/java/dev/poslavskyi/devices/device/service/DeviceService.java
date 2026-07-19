@@ -23,9 +23,12 @@ public class DeviceService {
     }
 
     @Transactional
-    public Device create(String name, String brand) {
-        Device device = repository.save(new Device(name, brand, clock));
-        return device;
+    public Device create(String name, String brand, DeviceState state) {
+        Device device = new Device(name, brand, clock);
+        if (state != null) {
+            device.changeState(state);
+        }
+        return repository.save(device);
     }
 
     @Transactional(readOnly = true)

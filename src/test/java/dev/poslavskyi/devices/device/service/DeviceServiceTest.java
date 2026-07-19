@@ -41,7 +41,7 @@ class DeviceServiceTest {
     void createPersistsNewAvailableDevice() {
         when(repository.save(any(Device.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
-        Device created = service.create("iPhone 15", "Apple");
+        Device created = service.create("iPhone 15", "Apple", null);
 
         assertEquals("iPhone 15", created.getName());
         assertEquals("Apple", created.getBrand());
